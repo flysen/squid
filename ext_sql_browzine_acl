@@ -1,0 +1,98 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use diagnostics;
+use Getopt::Long;
+use DBI;
+
+## set some vars by default
+my $db_driver = "ODBC:Driver={ODBC Driver 17 for SQL Server}";
+my $db_server = "localhost";
+my $db_passwd = undef;
+my $db_database = "browzine";
+my $db_user = undef;
+my $db_table = "sessions";
+my $db_urlcol = "url";
+my $dsn;
+my $dbh;
+my $redirect;
+my $aclStringTrim;
+my $status;
+my $srcRegex = qr/([A-Za-z]([A-Za-z0-9+\-.]+)+)(\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b))/mp;
+my $debug = '';
+
+## Assign from arguments
+GetOptions(
+        'dsn=s' => \$dsn,
+        'server=s' => \$db_server,
+        'password=s' => \$db_passwd,
+        'database=s' => \$db_database,
+        'user=s' => \$db_user,
+        'table=s' => \$db_table,
+        'urlcol=s' => \$db_urlcol,
+	'debug' => \$debug,
+        );
+
+## Build the dsn string for easy usage later.
+## TODO: * This should be done better and somewhere else.
+##       * ODBC from MS use ";" unixodbc use ":".
+##	 * $dsn will not be assigned from @args if used here.
+$dsn = "DBI:" . "$db_driver" . ";Server=" . "$db_server" . ";Database=" . "$db_database" . ";Uid=" . "$db_user" . ";Pwd=" . "$db_passwd";
+
+## Print the output for debug"
+## TODO: * WARNING will also print password to logfile
+print(STDERR "DBG - " . "$dsn" . " \n") if ($debug);
+
+$|=1;  #turn autoflush on
+while( <STDIN> ) {
+	$redirect = $_;
+	print(STDERR "DBG - " . "String received: " . "$redirect") if ($debug);
+	## Remove any newline stuff from string
+	chomp $redirect;	
+	## Set default value to ERR for this iteration
+	$status = "ERR";
+	## Prepair database connection or die
+	$dbh = DBI->connect($dsn) or
+		die DBI->errstr; 
+	## Check if string contain domainname and is a proper url, 
+	## if not don't do anything just send ERR to Squid.
+	if ( $redirect =~ /$srcRegex/g ) {	
+		## Debug (just for testing some outputs)	
+		print(STDERR "DBG - " . "Parsed string to serach for: " . "${^MATCH}" . "\n") if ($debug);
+		## Assign the match to var should be the domainname
+		$aclStringTrim = ${^MATCH};
+		## Print query for easy debug
+		print (STDERR "DBG - " . "SELECT * FROM " . "$db_database" . "." . "$db_table " . "WHERE URL LIKE " . "%". "$aclStringTrim" . "%" . "\n") if ($debug);
+		## Do database update
+		my $sth = $dbh->prepare("SELECT * FROM " . "$db_database" . "." . "$db_table " . "WHERE URL LIKE ?");
+		## Executhe the prepared query and include like "%" in string
+		$sth->execute('%' . $aclStringTrim . '%');
+                ## If empty move on to continue... with status = ERR
+                ## TODO: If DB error (connected but error in query) make sure to die
+		$sth->rows || next;
+		## Incase we have multiple result count them for easy debug
+		## TODO: * If not debug skip this while loop.
+		my $counter = 0;
+		while (my $row = $sth->fetchrow_hashref) {
+			print(STDERR "DBG " . "$counter" . " - " . "url: $row->{URL}  date: $row->{TimeStamp}" . "\n") if ($debug);
+			$counter +=1;
+		}
+		## Set status to OK
+		$status = "OK";
+	} 
+} continue {
+        ## If status not OK and debug show search
+	if (($status ne "OK") && ($debug)) {
+		print(STDERR "DBG - Could not find " . "$redirect" . " in database" . "\n");
+	}
+	## Before we leave, disconect from database
+	$dbh->disconnect()
+		or warn "Disconnection failed: $DBI::errstr\n";
+	## Make sure we drop connection
+	if ((not $dbh->ping) && ($debug)) {
+		 print(STDERR "DBG - " . "DB connection is closed!" . "\n");
+	}
+	## We have a final result, so tell Squid that!
+	print $status . "\n";
+	}
