@@ -169,3 +169,4 @@ TODO
 * Some comments in code.
 * Do URI column i dabase primary key to avoid duplicates.
 * Use API to populate database with new URIs
+* Connect to Travis CI for easy tests and deployments.
