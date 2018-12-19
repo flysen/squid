@@ -116,7 +116,7 @@ Nice to know
 ------------
 Some installation scratchpads.
 
-### MariaDb MySql
+### MariaDB MySQL
 
 ```
 DROP TABLE IF EXISTS `sessions`;
@@ -150,8 +150,8 @@ ALTER TABLE public.sessions OWNER TO broread;
 
 INSERT INTO public.sessions (url, enabled) VALUES ('http://muse.jhu.edu/', '2018-12-18 13:33:48.76027');
 INSERT INTO public.sessions (url, enabled) VALUES ('http://nr.ucpress.edu/', '2018-12-18 13:33:58.795883');
-INSERT INTO public.sessions (url, enabled) VALUES ('https://urlproxy.sunet.se/canit/urlproxy.php?_q=aHR0cDovL25ldXJvaW50ZXJ2ZW50aW9uLm9yZy8%3D&_s=ZnJlZHJpay5seXNlbkB1Yi51dS5zZQ%3D%3D&_c=7c4f6009&_r=dXUtc2U%3D', '2018-12-18 13:34:15.298673');
-INSERT INTO public.sessions (url, enabled) VALUES ('https://urlproxy.sunet.se/canit/urlproxy.php?_q=aHR0cDovL21vc3F1aXRvLWphbWNhLm9yZy8%3D&_s=ZnJlZHJpay5seXNlbkB1Yi51dS5zZQ%3D%3D&_c=3c573f25&_r=dXUtc2U%3D', '2018-12-18 13:34:34.462326');
+INSERT INTO public.sessions (url, enabled) VALUES ('https://urlproxy.sunet.se/canit/urlproxy.php?_q=aHR0cDovL25ldXJvaW50ZXJ2ZW50aW9uLm9yZy8%3D&_s=ZnJlZHS5zZQ%3D%3D&_c=7c4f6009&_r=dXUtc2U%3D', '2018-12-18 13:34:15.298673');
+INSERT INTO public.sessions (url, enabled) VALUES ('https://urlproxy.sunet.se/canit/urlproxy.php?_q=aHR0cDovL21vc3F1aXRvLWphbWNhLm9yZy8%3D&_s=ZnJlZHJpayZQ%3D%3D&_c=3c573f25&_r=dXUtc2U%3D', '2018-12-18 13:34:34.462326');
 INSERT INTO public.sessions (url, enabled) VALUES ('http://mmbr.asm.org/', '2018-12-18 13:34:45.702683');
 INSERT INTO public.sessions (url, enabled) VALUES ('https://agricultureandfoodsecurity.biomedcentral.com/', '2018-12-18 13:35:16.180128');
 
